@@ -3,10 +3,11 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyABUYh5HaWwZ3hCLO6xKLQ5zxiQ19H-drg",
+  apiKey: "AIzaSyCDt5kcl-Ib-MCskjiQMiD_yShIhsLgGd0",
   authDomain: "fit-lms.firebaseapp.com",
+  databaseURL: "https://fit-lms-default-rtdb.firebaseio.com",
   projectId: "fit-lms",
-  storageBucket: "fit-lms.appspot.com",
+  storageBucket: "fit-lms.firebasestorage.app",
   messagingSenderId: "523650703056",
   appId: "1:523650703056:web:72845c5a1e2d51e95ec8d5"
 };
