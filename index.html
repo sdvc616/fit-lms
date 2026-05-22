@@ -405,6 +405,7 @@ Open in Google Maps
 <script type="module">
 
 import { auth, db } from "./firebase.js";
+
 import {
 onAuthStateChanged,
 signOut
@@ -418,10 +419,11 @@ orderBy,
 limit
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* AUTH CHECK */
+
+/* ================= AUTH CHECK ================= */
 onAuthStateChanged(auth, (user) => {
 if (!user) {
-window.location.href = "login.html";
+window.location.replace("login.html");
 } else {
 loadCounts();
 loadNotice();
@@ -429,7 +431,8 @@ updateBadge();
 }
 });
 
-/* LOAD COUNTS */
+
+/* ================= LOAD COUNTS ================= */
 async function loadCounts(){
 
 let students = await getDocs(collection(db, "students"));
@@ -439,7 +442,8 @@ let staff = await getDocs(collection(db, "staff"));
 document.getElementById("staffCount").innerText = staff.size;
 }
 
-/* LATEST NOTICE */
+
+/* ================= NOTICE ================= */
 async function loadNotice(){
 
 let q = query(collection(db, "notices"), orderBy("created_at","desc"), limit(1));
@@ -452,7 +456,8 @@ snap.forEach(d => text = d.data().text);
 document.getElementById("noticeText").innerText = text;
 }
 
-/* BADGE */
+
+/* ================= BADGE ================= */
 async function updateBadge(){
 
 let snap = await getDocs(collection(db, "notices"));
@@ -468,40 +473,38 @@ let badge = document.getElementById("noticeBadge");
 if(count > 0){
 badge.style.display = "inline-block";
 badge.innerText = count;
+} else {
+badge.style.display = "none";
 }
 }
 
-/* LOGOUT */
-import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { auth } from "./firebase.js";
 
+/* ================= LOGOUT ================= */
 window.logout = async function () {
-    await signOut(auth);
-    window.location.replace("login.html");
+await signOut(auth);
+window.location.replace("login.html");
 };
-}
 
-/* MENU */
+
+/* ================= UI FUNCTIONS ================= */
 window.toggleMenu = function(){
 document.getElementById("sidebar").classList.toggle("active");
-}
+};
 
-/* DEPARTMENTS */
 window.openDepartments = function(){
 alert("Departments popup (same as before)");
-}
+};
 
-/* MAP */
 window.openLocation = function(){
 document.getElementById("mapPopup").style.display="flex";
-}
+};
 
 window.onclick = function(e){
 let popup = document.getElementById("mapPopup");
 if(e.target == popup){
 popup.style.display="none";
 }
-}
+};
 
 </script>
 
