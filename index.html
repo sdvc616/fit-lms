@@ -328,7 +328,7 @@ Notices
 <div class="header">
 <span class="menu-toggle" onclick="toggleMenu()">☰</span>
 <h2>Faran Institute of Technology</h2>
-<a class="nav-btn" href="#" onclick="logout()">Logout</a>
+<a href="#" onclick="logout()">Logout</a>
 </div>
 
 <div class="content">
@@ -446,14 +446,37 @@ document.getElementById("staffCount").innerText = staff.size;
 /* ================= NOTICE ================= */
 async function loadNotice(){
 
-let q = query(collection(db, "notices"), orderBy("created_at","desc"), limit(1));
-let snap = await getDocs(q);
+    try {
 
-let text = "No notice available";
+        let snap = await getDocs(collection(db, "notices"));
 
-snap.forEach(d => text = d.data().text);
+        let text = "No notice available";
 
-document.getElementById("noticeText").innerText = text;
+        let latestTime = 0;
+
+        snap.forEach(doc => {
+
+            let data = doc.data();
+
+            if (data.created_at) {
+
+                let time = data.created_at.seconds 
+                    ? data.created_at.seconds 
+                    : new Date(data.created_at).getTime();
+
+                if (time > latestTime) {
+                    latestTime = time;
+                    text = data.text;
+                }
+            }
+        });
+
+        document.getElementById("noticeText").innerText = text;
+
+    } catch (error) {
+        console.log("Notice error:", error);
+        document.getElementById("noticeText").innerText = "Failed to load notice";
+    }
 }
 
 
@@ -481,8 +504,13 @@ badge.style.display = "none";
 
 /* ================= LOGOUT ================= */
 window.logout = async function () {
-await signOut(auth);
-window.location.replace("login.html");
+    try {
+        await signOut(auth);
+        window.location.replace("login.html");
+    } catch (error) {
+        console.log("Logout error:", error);
+        window.location.replace("login.html");
+    }
 };
 
 
