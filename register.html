@@ -191,10 +191,24 @@ window.registerUser = async function(){
             window.location.href = "login.html";
         }, 1500);
 
-    } catch(error){
-        msg.style.display = "block";
-        msg.className = "msg error";
-        msg.innerText = error.message;
+  } catch(error){
+    msg.style.display = "block";
+    msg.className = "msg error";
+
+    if(error.code === "auth/email-already-in-use"){
+        msg.innerText = "This email is already registered. Please login instead.";
+    }
+    else if(error.code === "auth/invalid-email"){
+        msg.innerText = "Invalid email format.";
+    }
+    else if(error.code === "auth/weak-password"){
+        msg.innerText = "Password must be at least 8 characters.";
+    }
+    else if(error.code === "auth/network-request-failed"){
+        msg.innerText = "Network error. Please try again.";
+    }
+    else {
+        msg.innerText = "Something went wrong. Try again.";
     }
 }
 
