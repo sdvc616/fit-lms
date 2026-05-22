@@ -421,15 +421,30 @@ limit
 
 
 /* ================= AUTH CHECK ================= */
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { auth } from "./firebase.js";
+
+let authChecked = false;
+
 onAuthStateChanged(auth, (user) => {
-if (!user) {
-window.location.replace("login.html");
-} else {
-loadCounts();
-loadNotice();
-updateBadge();
-}
+
+    authChecked = true;
+
+    if (!user) {
+        window.location.replace("login.html");
+    } else {
+        loadCounts();
+        loadNotice();
+        updateBadge();
+    }
 });
+
+/* BLOCK PAGE UNTIL AUTH CHECK COMPLETES */
+setTimeout(() => {
+    if (!authChecked) {
+        window.location.replace("login.html");
+    }
+}, 1500);
 
 
 /* ================= LOAD COUNTS ================= */
@@ -536,5 +551,7 @@ popup.style.display="none";
 
 </script>
 
+<script type="module" src="./security.js"></script>
+    
 </body>
 </html>
