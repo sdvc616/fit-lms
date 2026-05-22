@@ -3,7 +3,7 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDafN_kj2uOS7fQw5tIEQSbarvGS17ZIAE",
+  apiKey: "AIzaSyABUYh5HaWwZ3hCLO6xKLQ5zxiQ19H-drg",
   authDomain: "fit-lms.firebaseapp.com",
   projectId: "fit-lms",
   storageBucket: "fit-lms.appspot.com",
