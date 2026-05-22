@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>FIT Register</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#f4f6fb;
+}
+
+.top-header{
+background:#0a2a66;
+color:white;
+text-align:center;
+padding:20px;
+}
+
+.top-header img{
+width:60px;
+height:60px;
+border-radius:50%;
+border:2px solid white;
+}
+
+.main{
+display:flex;
+justify-content:center;
+padding:30px;
+gap:20px;
+}
+
+.side{display:none;}
+
+.center{
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.register-box{
+background:white;
+padding:30px;
+width:320px;
+border-radius:12px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+text-align:center;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:8px 0;
+border:1px solid #ccc;
+border-radius:6px;
+}
+
+button{
+width:100%;
+padding:10px;
+background:#0a2a66;
+color:white;
+border:none;
+border-radius:6px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.login-link{
+display:block;
+margin-top:10px;
+color:#0a2a66;
+font-weight:bold;
+text-decoration:none;
+}
+
+.msg{
+padding:10px;
+margin-bottom:10px;
+border-radius:6px;
+font-size:14px;
+}
+
+.error{background:#ffdddd;color:#a10000;}
+.success{background:#ddffdd;color:#0a6b0a;}
+
+@media(max-width:900px){
+.main{flex-direction:column;padding:15px;}
+.register-box{width:100%;max-width:420px;}
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="top-header">
+<img src="img/fit.jpeg">
+<h1>Faran Institute of Technology (FIT)</h1>
+</div>
+
+<div class="main">
+
+<div class="side"></div>
+
+<div class="center">
+
+<div class="register-box">
+
+<h2>Create Account</h2>
+
+<div id="msg" class="msg" style="display:none;"></div>
+
+<input type="text" id="username" placeholder="Username">
+<input type="email" id="email" placeholder="Email Address">
+<input type="password" id="password" placeholder="Password (min 8 chars)">
+
+<button onclick="registerUser()">Register</button>
+
+<a href="login.html" class="login-link">
+Already have account? Login
+</a>
+
+</div>
+
+</div>
+
+<div class="side"></div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* 🔥 FIREBASE CONFIG */
+const firebaseConfig = {
+  apiKey: "AIzaSyDafN_kj2uOS7fQw5tIEQSbarvS17ZIAE",
+  authDomain: "fit-lms.firebaseapp.com",
+  projectId: "fit-lms",
+  appId: "1:523650703056:web:72845c5a1e2d51e95ec8d5"
+
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth();
+const db = getFirestore(app);
+
+window.registerUser = async function(){
+
+    let username = document.getElementById("username").value;
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+
+    let msg = document.getElementById("msg");
+    msg.style.display = "none";
+
+    if(password.length < 8){
+        msg.style.display = "block";
+        msg.className = "msg error";
+        msg.innerText = "Password must be at least 8 characters!";
+        return;
+    }
+
+    try{
+
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        /* SAVE EXTRA DATA (ROLE + USERNAME) */
+        await setDoc(doc(db, "users", user.uid), {
+            username: username,
+            email: email,
+            role: "student"
+        });
+
+        msg.style.display = "block";
+        msg.className = "msg success";
+        msg.innerText = "Account created successfully! Redirecting...";
+
+        setTimeout(() => {
+            window.location.href = "login.html";
+        }, 1500);
+
+    } catch(error){
+        msg.style.display = "block";
+        msg.className = "msg error";
+        msg.innerText = error.message;
+    }
+}
+
+</script>
+
+</body>
+</html>
