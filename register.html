@@ -142,11 +142,13 @@ import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10
 
 /* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
-  apiKey: "AIzaSyDafN_kj2uOS7fQw5tIEQSbarGvS17ZIAE"
+  apiKey: "AIzaSyDafN_kj2uOS7fQw5tIEQSbarvG17ZIAE",
   authDomain: "fit-lms.firebaseapp.com",
+  databaseURL: "https://fit-lms-default-rtdb.firebaseio.com",
   projectId: "fit-lms",
+  storageBucket: "fit-lms.firebasestorage.app",
+  messagingSenderId: "523650703056",
   appId: "1:523650703056:web:72845c5a1e2d51e95ec8d5"
-
 };
 
 const app = initializeApp(firebaseConfig);
