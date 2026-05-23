@@ -134,11 +134,21 @@ Already have account? Login
 
 </div>
 
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import {
+getAuth,
+createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+import {
+getFirestore,
+doc,
+setDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
@@ -152,67 +162,143 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth();
+
+const auth = getAuth(app);
+
 const db = getFirestore(app);
 
+
+/* ================= REGISTER ================= */
 window.registerUser = async function(){
 
     let username = document.getElementById("username").value;
+
     let email = document.getElementById("email").value;
+
     let password = document.getElementById("password").value;
 
     let msg = document.getElementById("msg");
+
     msg.style.display = "none";
 
-    if(password.length < 8){
+
+    /* EMPTY CHECK */
+    if(!username || !email || !password){
+
         msg.style.display = "block";
+
         msg.className = "msg error";
-        msg.innerText = "Password must be at least 8 characters!";
+
+        msg.innerText = "Please fill all fields!";
+
         return;
     }
 
-    try{
 
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        /* SAVE EXTRA DATA (ROLE + USERNAME) */
-        await setDoc(doc(db, "users", user.uid), {
-            username: username,
-            email: email,
-            role: "user"
-        });
+    /* PASSWORD CHECK */
+    if(password.length < 8){
 
         msg.style.display = "block";
+
+        msg.className = "msg error";
+
+        msg.innerText = "Password must be at least 8 characters!";
+
+        return;
+    }
+
+
+    try{
+
+        /* CREATE ACCOUNT */
+        const userCredential =
+        await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        const user = userCredential.user;
+
+
+        /* SAVE USER DATA */
+        await setDoc(doc(db, "users", user.uid), {
+
+            username: username,
+
+            email: email,
+
+            role: "user"
+
+        });
+
+
+        /* SUCCESS */
+        msg.style.display = "block";
+
         msg.className = "msg success";
-        msg.innerText = "Account created successfully! Redirecting...";
+
+        msg.innerText =
+        "Account created successfully! Redirecting...";
+
 
         setTimeout(() => {
-            window.location.href = "index.html";
+
+            window.location.replace("index.html");
+
         }, 1500);
 
-  } catch(error){
-    msg.style.display = "block";
-    msg.className = "msg error";
 
-    if(error.code === "auth/email-already-in-use"){
-        msg.innerText = "This email is already registered. Please login instead.";
+    } catch(error){
+
+        msg.style.display = "block";
+
+        msg.className = "msg error";
+
+
+        if(error.code === "auth/email-already-in-use"){
+
+            msg.innerText =
+            "This email is already registered. Please login instead.";
+
+        }
+
+        else if(error.code === "auth/invalid-email"){
+
+            msg.innerText =
+            "Invalid email format.";
+
+        }
+
+        else if(error.code === "auth/weak-password"){
+
+            msg.innerText =
+            "Password must be at least 8 characters.";
+
+        }
+
+        else if(error.code === "auth/network-request-failed"){
+
+            msg.innerText =
+            "Network error. Please try again.";
+
+        }
+
+        else {
+
+            msg.innerText =
+            "Something went wrong. Try again.";
+
+        }
+
+        console.log(error);
+
     }
-    else if(error.code === "auth/invalid-email"){
-        msg.innerText = "Invalid email format.";
-    }
-    else if(error.code === "auth/weak-password"){
-        msg.innerText = "Password must be at least 8 characters.";
-    }
-    else if(error.code === "auth/network-request-failed"){
-        msg.innerText = "Network error. Please try again.";
-    }
-    else {
-        msg.innerText = "Something went wrong. Try again.";
-    }
-}
+
+};
 
 </script>
+
 
 </body>
 </html>
