@@ -186,28 +186,27 @@ window.loginUser = async function () {
 
     try {
 
-        // 1. LOGIN
-        const userCredential =
-            await signInWithEmailAndPassword(auth, email, password);
+        // LOGIN
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
-        const user = userCredential.user;
+        // FORCE REFRESH EMAIL STATUS (VERY IMPORTANT)
+        await userCredential.user.reload();
 
-        // 2. FORCE REFRESH USER STATUS
-        await user.reload();
+        const user = auth.currentUser;
 
-        const currentUser = auth.currentUser;
+        console.log("EMAIL VERIFIED STATUS:", user.emailVerified);
 
-        // 3. EMAIL VERIFICATION CHECK
-        if (!currentUser.emailVerified) {
+        // BLOCK IF NOT VERIFIED
+        if (user.emailVerified !== true) {
 
             msg.style.display = "block";
-            msg.innerText = "Please verify your email first (Check Gmail).";
+            msg.innerText = "Email not verified. Please check your Gmail and verify first.";
 
             await signOut(auth);
             return;
         }
 
-        // 4. GET USER ROLE
+        // GET ROLE FROM FIRESTORE
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
 
@@ -217,7 +216,7 @@ window.loginUser = async function () {
             role = snap.data().role;
         }
 
-        // 5. REDIRECT
+        // REDIRECT
         if (role === "admin" || role === "super_admin") {
             window.location.replace("admin_dashboard.html");
         } else {
@@ -228,6 +227,7 @@ window.loginUser = async function () {
 
         msg.style.display = "block";
         msg.innerText = error.message;
+
     }
 };
 
