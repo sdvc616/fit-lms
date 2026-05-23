@@ -191,14 +191,14 @@ window.registerUser = async function () {
 
     try {
 
-        // create user
+        // 1. create user
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // send verification email
+        // 2. send verification email
         await sendEmailVerification(user);
 
-        // save user
+        // 3. save user in Firestore
         await setDoc(doc(db, "users", user.uid), {
             username: username,
             email: email,
@@ -206,13 +206,10 @@ window.registerUser = async function () {
             verified: false
         });
 
+        // 4. show message ONLY (NO redirect)
         msg.style.display = "block";
         msg.className = "msg success";
-        msg.innerText = "Verification email sent. Please check Gmail.";
-
-        setTimeout(() => {
-            window.location.replace("index.html");
-        }, 3000);
+        msg.innerText = "Verification email sent. Please check your Gmail and verify before login.";
 
     } catch (error) {
 
@@ -235,7 +232,7 @@ window.registerUser = async function () {
         console.log(error);
     }
 };
-
+  
 </script>
 
 
