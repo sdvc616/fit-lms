@@ -431,7 +431,7 @@ onAuthStateChanged(auth, (user) => {
     authChecked = true;
 
     if (!user) {
-        window.location.replace("login.html");
+        window.location.replace("index.html");
     } else {
         loadCounts();
         loadNotice();
@@ -442,7 +442,7 @@ onAuthStateChanged(auth, (user) => {
 /* BLOCK PAGE UNTIL AUTH CHECK COMPLETES */
 setTimeout(() => {
     if (!authChecked) {
-        window.location.replace("login.html");
+        window.location.replace("index.html");
     }
 }, 1500);
 
