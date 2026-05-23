@@ -143,9 +143,7 @@ import {
 getAuth,
 createUserWithEmailAndPassword,
 sendEmailVerification
-}
-
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
 getFirestore,
@@ -153,11 +151,10 @@ doc,
 setDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* 🔥 FIREBASE CONFIG */
+/* FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyCDt5kcl-Ib-MCskjiQMiD_yShIhsLgGd0",
   authDomain: "fit-lms.firebaseapp.com",
-  databaseURL: "https://fit-lms-default-rtdb.firebaseio.com",
   projectId: "fit-lms",
   storageBucket: "fit-lms.firebasestorage.app",
   messagingSenderId: "523650703056",
@@ -165,13 +162,10 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
-
 const db = getFirestore(app);
 
-
-/* ================= REGISTER ================= */
+/* REGISTER */
 window.registerUser = async function () {
 
     let username = document.getElementById("username").value;
@@ -197,14 +191,14 @@ window.registerUser = async function () {
 
     try {
 
-        // 1. create account
+        // create user
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // 2. send verification email
+        // send verification email
         await sendEmailVerification(user);
 
-        // 3. save user in firestore
+        // save user
         await setDoc(doc(db, "users", user.uid), {
             username: username,
             email: email,
@@ -212,63 +206,34 @@ window.registerUser = async function () {
             verified: false
         });
 
-        // 4. IMPORTANT MESSAGE
         msg.style.display = "block";
         msg.className = "msg success";
-        msg.innerText = "Verification email sent. Please check your Gmail and verify first.";
+        msg.innerText = "Verification email sent. Please check Gmail.";
 
-        // 5. DO NOT auto login or redirect immediately
         setTimeout(() => {
             window.location.replace("index.html");
         }, 3000);
 
     } catch (error) {
+
         msg.style.display = "block";
         msg.className = "msg error";
-        msg.innerText = error.message;
-    }
-};
 
-
-        if(error.code === "auth/email-already-in-use"){
-
-            msg.innerText =
-            "This email is already registered. Please login instead.";
-
+        if (error.code === "auth/email-already-in-use") {
+            msg.innerText = "This email is already registered.";
         }
-
-        else if(error.code === "auth/invalid-email"){
-
-            msg.innerText =
-            "Invalid email format.";
-
+        else if (error.code === "auth/invalid-email") {
+            msg.innerText = "Invalid email format.";
         }
-
-        else if(error.code === "auth/weak-password"){
-
-            msg.innerText =
-            "Password must be at least 8 characters.";
-
+        else if (error.code === "auth/weak-password") {
+            msg.innerText = "Password must be at least 8 characters.";
         }
-
-        else if(error.code === "auth/network-request-failed"){
-
-            msg.innerText =
-            "Network error. Please try again.";
-
-        }
-
         else {
-
-            msg.innerText =
-            "Something went wrong. Try again.";
-
+            msg.innerText = error.message;
         }
 
         console.log(error);
-
     }
-
 };
 
 </script>
