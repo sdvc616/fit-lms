@@ -442,11 +442,10 @@ onAuthStateChanged(auth, (user) => {
 /* ================= LOAD COUNTS ================= */
 async function loadCounts(){
 
-let students = await getDocs(collection(db, "students"));
-document.getElementById("studentCount").innerText = students.size;
+document.getElementById("studentCount").innerText = "97";
 
-let staff = await getDocs(collection(db, "staff"));
-document.getElementById("staffCount").innerText = staff.size;
+document.getElementById("staffCount").innerText = "15";
+
 }
 
 
