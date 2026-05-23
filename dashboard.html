@@ -328,7 +328,7 @@ Notices
 <div class="header">
 <span class="menu-toggle" onclick="toggleMenu()">☰</span>
 <h2>Faran Institute of Technology</h2>
-<a href="#" class="logout" onclick="logout()">Logout</a>
+<a href="#" onclick="logout()" class="nav-btn">Logout</a>
 </div>
 
 <div class="content">
@@ -519,13 +519,21 @@ badge.style.display = "none";
 
 /* ================= LOGOUT ================= */
 window.logout = async function () {
+
     try {
+
         await signOut(auth);
-        window.location.replace("login.html");
+
+        window.location.replace("index.html");
+
     } catch (error) {
-        console.log("Logout error:", error);
-        window.location.replace("login.html");
+
+        console.log(error);
+
+        window.location.replace("index.html");
+
     }
+
 };
 
 
