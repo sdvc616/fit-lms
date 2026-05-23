@@ -190,13 +190,16 @@ window.loginUser = async function () {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // 🔥 IMPORTANT: refresh user data
+        // 🔥 FORCE REFRESH USER DATA (IMPORTANT FIX)
         await user.reload();
 
-        // ❌ BLOCK IF NOT VERIFIED
-        if (!user.emailVerified) {
+        const refreshedUser = auth.currentUser;
+
+        // ❌ BLOCK UNVERIFIED USERS
+        if (!refreshedUser.emailVerified) {
             msg.style.display = "block";
-            msg.innerText = "Please verify your email first. Check your Gmail inbox.";
+            msg.innerText = "Your email is not verified. Please check Gmail and verify first.";
+            await auth.signOut();
             return;
         }
 
@@ -209,6 +212,7 @@ window.loginUser = async function () {
             role = snap.data().role;
         }
 
+        // ✅ ROUTING
         if (role === "admin" || role === "super_admin") {
             window.location.replace("admin_dashboard.html");
         } else {
@@ -216,8 +220,10 @@ window.loginUser = async function () {
         }
 
     } catch (error) {
+
         msg.style.display = "block";
         msg.innerText = error.message.replace("Firebase:", "");
+
     }
 };
 
