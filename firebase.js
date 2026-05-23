@@ -5,7 +5,6 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCDt5kcl-Ib-MCskjiQMiD_yShIhsLgGd0",
   authDomain: "fit-lms.firebaseapp.com",
-  databaseURL: "https://fit-lms-default-rtdb.firebaseio.com",
   projectId: "fit-lms",
   storageBucket: "fit-lms.firebasestorage.app",
   messagingSenderId: "523650703056",
