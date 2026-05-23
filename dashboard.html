@@ -388,19 +388,50 @@ Faran Institute of Technology
 </div>
 
 <!-- MAP -->
+<!-- MAP POPUP -->
 <div class="map-popup" id="mapPopup">
+
 <div class="map-box">
+
+<span 
+style="position:absolute;top:10px;right:15px;font-size:28px;cursor:pointer;font-weight:bold;color:#0a2a66;"
+onclick="closeLocation()">
+
+×
+
+</span>
+
 <h2>Our Location</h2>
 
 <a class="open-map-btn"
 href="https://maps.app.goo.gl/1F2GFXNUWxtRpzL37"
 target="_blank">
+
 Open in Google Maps
+
 </a>
 
 </div>
+
 </div>
 
+<!-- DEPARTMENT POPUP -->
+<div class="popup" id="departmentPopup">
+
+<div class="popup-content">
+
+<span class="close-btn" onclick="closeDepartments()">×</span>
+
+<h3>Departments</h3>
+
+<a href="cit_dashboard.html">📘 CIT Department</a>
+
+<a href="et_dashboard.html">⚙️ ET Department</a>
+
+</div>
+
+</div>
+    
 <!-- ================= FIREBASE ================= -->
 <script type="module">
 
@@ -534,18 +565,43 @@ document.getElementById("sidebar").classList.toggle("active");
 };
 
 window.openDepartments = function(){
-alert("Departments popup (same as before)");
+
+document.getElementById("departmentPopup").style.display = "flex";
+
+};
+
+window.closeDepartments = function(){
+
+document.getElementById("departmentPopup").style.display = "none";
+
 };
 
 window.openLocation = function(){
 document.getElementById("mapPopup").style.display="flex";
 };
 
+window.openLocation = function(){
+
+document.getElementById("mapPopup").style.display = "flex";
+
+};
+
+window.closeLocation = function(){
+
+document.getElementById("mapPopup").style.display = "none";
+
+};
+
 window.onclick = function(e){
+
 let popup = document.getElementById("mapPopup");
+
 if(e.target == popup){
-popup.style.display="none";
+
+popup.style.display = "none";
+
 }
+
 };
 
 </script>
