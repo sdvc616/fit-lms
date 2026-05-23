@@ -190,20 +190,30 @@ window.loginUser = async function () {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
+        // 🔥 IMPORTANT: refresh user data
+        await user.reload();
+
+        // ❌ BLOCK IF NOT VERIFIED
+        if (!user.emailVerified) {
+            msg.style.display = "block";
+            msg.innerText = "Please verify your email first. Check your Gmail inbox.";
+            return;
+        }
+
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
 
-        let role = "student";
+        let role = "user";
 
         if (snap.exists()) {
             role = snap.data().role;
         }
 
         if (role === "admin" || role === "super_admin") {
-    window.location.replace("admin_dashboard.html");
-} else {
-    window.location.replace("dashboard.html");
-}
+            window.location.replace("admin_dashboard.html");
+        } else {
+            window.location.replace("dashboard.html");
+        }
 
     } catch (error) {
         msg.style.display = "block";
