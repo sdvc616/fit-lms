@@ -141,8 +141,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
 import {
 getAuth,
-createUserWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+createUserWithEmailAndPassword,
+sendEmailVerification
+}
+
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
 getFirestore,
@@ -219,6 +222,8 @@ window.registerUser = async function(){
         );
 
         const user = userCredential.user;
+        await sendEmailVerification(user);
+
 
 
         /* SAVE USER DATA */
@@ -238,16 +243,15 @@ window.registerUser = async function(){
 
         msg.className = "msg success";
 
-        msg.innerText =
-        "Account created successfully! Redirecting...";
+       msg.innerText =
+"Verification email sent. Please verify your Gmail before login.";
 
 
         setTimeout(() => {
 
-            window.location.replace("index.html");
+    window.location.replace("index.html");
 
-        }, 1500);
-
+}, 4000);
 
     } catch(error){
 
