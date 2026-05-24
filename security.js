@@ -26,7 +26,7 @@ onAuthStateChanged(auth, async (user) => {
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
 
-        /* ================= USER NOT IN FIRESTORE ================= */
+        /* ================= USER NOT FOUND ================= */
         if (!snap.exists()) {
             window.location.replace("index.html");
             return;
@@ -40,15 +40,25 @@ onAuthStateChanged(auth, async (user) => {
             return;
         }
 
-        /* ================= ROLE CHECK (OPTIONAL FUTURE USE) ================= */
-        const role = data.role || "student";
+        /* ================= ROLE SYSTEM (FIXED) ================= */
+        const role = data.role || "user";
 
-        if (role === "admin") {
-            console.log("Admin user detected");
+        /* ================= ROLE-BASED CONTROL ================= */
+
+        if (role === "super_admin") {
+            console.log("Super Admin detected");
+        }
+
+        else if (role === "admin") {
+            console.log("Admin detected");
+        }
+
+        else {
+            console.log("Normal user detected");
         }
 
         /* ================= ACCESS GRANTED ================= */
-        console.log("User authenticated:", user.uid);
+        console.log("Access granted:", user.uid);
 
     } catch (error) {
 
