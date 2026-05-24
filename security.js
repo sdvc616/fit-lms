@@ -10,8 +10,8 @@ import { auth } from "./firebase.js";
 
 const db = getFirestore();
 
-/* ================= HIDE PAGE UNTIL CHECK ================= */
-document.body.style.display = "none";
+/* ================= SAFE PAGE HIDE (NO FLICKER) ================= */
+document.documentElement.style.visibility = "hidden";
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -66,8 +66,8 @@ onAuthStateChanged(auth, async (user) => {
         /* ================= ACCESS GRANTED ================= */
         console.log("Access granted:", user.uid);
 
-        /* ================= SHOW PAGE AFTER SUCCESS ================= */
-        document.body.style.display = "block";
+        /* ================= SHOW PAGE ================= */
+        document.documentElement.style.visibility = "visible";
 
     } catch (error) {
 
