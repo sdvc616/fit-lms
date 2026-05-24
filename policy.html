@@ -159,7 +159,6 @@ You must accept to continue using the system
 </div>
 
 <!-- ================= FIREBASE ================= -->
-
 <script type="module">
 
 import { auth, db } from "./firebase.js";
@@ -169,34 +168,41 @@ doc,
 updateDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+import {
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 
 /* ================= ACCEPT POLICY ================= */
 
-window.acceptPolicy = async function () {
+window.acceptPolicy = function () {
 
-    try {
+    onAuthStateChanged(auth, async (user) => {
 
-        const user = auth.currentUser;
+        try {
 
-        if (!user) {
-            window.location.replace("index.html");
-            return;
+            if (!user) {
+                window.location.replace("index.html");
+                return;
+            }
+
+            await updateDoc(doc(db, "users", user.uid), {
+                policyAccepted: true
+            });
+
+            window.location.replace("dashboard.html");
+
+        } catch (error) {
+            console.log(error);
+            alert("Something went wrong. Try again.");
         }
 
-        await updateDoc(doc(db, "users", user.uid), {
-            policyAccepted: true
-        });
-
-        window.location.replace("dashboard.html");
-
-    } catch (error) {
-        console.log(error);
-        alert("Something went wrong. Try again.");
-    }
+    });
 
 };
 
 </script>
+
 
 </body>
 </html>
