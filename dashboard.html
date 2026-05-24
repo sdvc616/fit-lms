@@ -432,7 +432,6 @@ Open in Google Maps
 
 </div>
     
-<!-- ================= FIREBASE ================= -->
 <script type="module">
 
 import { auth, db } from "./firebase.js";
@@ -445,6 +444,8 @@ signOut
 import {
 collection,
 getDocs,
+doc,
+getDoc,
 query,
 orderBy,
 limit
@@ -453,34 +454,71 @@ limit
 
 /* ================= AUTH CHECK ================= */
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
-
         window.location.replace("index.html");
+        return;
+    }
 
-    } else {
+    try {
+
+        /* GET USER DATA */
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+            window.location.replace("index.html");
+            return;
+        }
+
+        const data = snap.data();
+
+        /* ================= POLICY CHECK ================= */
+        if (!data.policyAccepted) {
+            window.location.replace("policy.html");
+            return;
+        }
 
         loadCounts();
         loadNotice();
         updateBadge();
 
+    } catch (error) {
+        console.log(error);
+        window.location.replace("index.html");
     }
 
 });
 
 
-/* ================= LOAD COUNTS ================= */
+/* ================= LOAD COUNTS FROM FIRESTORE ================= */
+
 async function loadCounts(){
 
-document.getElementById("studentCount").innerText = "97";
+    try {
 
-document.getElementById("staffCount").innerText = "15";
+        const snap = await getDocs(collection(db, "users"));
+
+        let users = 0;
+
+        snap.forEach(doc => {
+            const data = doc.data();
+            if(data.role === "user") users++;
+        });
+
+        document.getElementById("studentCount").innerText = users;
+        document.getElementById("staffCount").innerText = "0";
+
+    } catch (error) {
+        console.log(error);
+    }
 
 }
 
 
 /* ================= NOTICE ================= */
+
 async function loadNotice(){
 
     try {
@@ -496,21 +534,17 @@ async function loadNotice(){
         let text = "No notice available";
 
         snap.forEach(doc => {
-
             const data = doc.data();
-
             if(data.text){
                 text = data.text;
             }
-
         });
 
         document.getElementById("noticeText").innerText = text;
 
     } catch(error){
 
-        console.log("Notice Error:", error);
-
+        console.log(error);
         document.getElementById("noticeText").innerText =
         "No notice available";
 
@@ -520,76 +554,62 @@ async function loadNotice(){
 
 
 /* ================= BADGE ================= */
+
 async function updateBadge(){
 
-let snap = await getDocs(collection(db, "notices"));
+    let snap = await getDocs(collection(db, "notices"));
 
-let count = 0;
+    let count = 0;
 
-snap.forEach(d => {
-if(!d.data().read) count++;
-});
+    snap.forEach(d => {
+        if(!d.data().read) count++;
+    });
 
-let badge = document.getElementById("noticeBadge");
+    let badge = document.getElementById("noticeBadge");
 
-if(count > 0){
-badge.style.display = "inline-block";
-badge.innerText = count;
-} else {
-badge.style.display = "none";
-}
+    if(count > 0){
+        badge.style.display = "inline-block";
+        badge.innerText = count;
+    } else {
+        badge.style.display = "none";
+    }
 }
 
 
 /* ================= LOGOUT ================= */
+
 window.logout = async function () {
 
     try {
-
         await signOut(auth);
-
         window.location.href = "index.html";
-
     } catch (error) {
-
-        console.log("Logout Error:", error);
-
+        console.log(error);
     }
 
 };
 
 
 /* ================= UI FUNCTIONS ================= */
+
 window.toggleMenu = function(){
 document.getElementById("sidebar").classList.toggle("active");
 };
 
 window.openDepartments = function(){
-
 document.getElementById("departmentPopup").style.display = "flex";
-
 };
 
 window.closeDepartments = function(){
-
 document.getElementById("departmentPopup").style.display = "none";
-
 };
 
 window.openLocation = function(){
-document.getElementById("mapPopup").style.display="flex";
-};
-
-window.openLocation = function(){
-
 document.getElementById("mapPopup").style.display = "flex";
-
 };
 
 window.closeLocation = function(){
-
 document.getElementById("mapPopup").style.display = "none";
-
 };
 
 window.onclick = function(e){
@@ -597,9 +617,7 @@ window.onclick = function(e){
 let popup = document.getElementById("mapPopup");
 
 if(e.target == popup){
-
 popup.style.display = "none";
-
 }
 
 };
