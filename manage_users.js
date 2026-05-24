@@ -62,34 +62,99 @@ async function loadUsers(me) {
             <td>${id}</td>
             <td>${u.username || ""}</td>
             <td>${u.email || ""}</td>
-            <td>${u.role}</td>
-            <td>${u.status}</td>
+            <td>${u.role || "user"}</td>
+            <td>${u.status || "active"}</td>
             <td>
         `;
 
-        /* ================= BLOCK / UNBLOCK ================= */
-        if (!isSelf) {
+        /* ================= SUPER ADMIN RULES ================= */
+        if (me.role === "super_admin") {
 
-            if (u.status === "blocked") {
-                rows += `<button class="unblock" onclick="unblockUser('${id}')">Unblock</button>`;
-            } else {
-                rows += `<button class="block" onclick="blockUser('${id}')">Block</button>`;
+            /* CANNOT TOUCH SELF */
+            if (!isSelf) {
+
+                /* CANNOT TOUCH OTHER SUPER ADMINS */
+                if (u.role !== "super_admin") {
+
+                    /* BLOCK / UNBLOCK */
+                    if (u.status === "blocked") {
+
+                        rows += `
+                        <button class="unblock"
+                        onclick="unblockUser('${id}')">
+                        Unblock
+                        </button>
+                        `;
+
+                    } else {
+
+                        rows += `
+                        <button class="block"
+                        onclick="blockUser('${id}')">
+                        Block
+                        </button>
+                        `;
+                    }
+
+                }
+
+                /* PROMOTE USER */
+                if (u.role === "user") {
+
+                    rows += `
+                    <button class="promote"
+                    onclick="promoteUser('${id}')">
+                    Promote
+                    </button>
+                    `;
+                }
+
+                /* DEMOTE ADMIN */
+                if (u.role === "admin") {
+
+                    rows += `
+                    <button class="demote"
+                    onclick="demoteUser('${id}')">
+                    Demote
+                    </button>
+                    `;
+                }
+
             }
+
         }
 
-        /* ================= ROLE CONTROL ================= */
-        if (me.role === "super_admin" && !isSelf) {
+        /* ================= ADMIN RULES ================= */
+        else if (me.role === "admin") {
 
+            /* ADMIN CAN ONLY HANDLE USERS */
             if (u.role === "user") {
-                rows += `<button class="promote" onclick="promoteUser('${id}')">Promote</button>`;
+
+                if (u.status === "blocked") {
+
+                    rows += `
+                    <button class="unblock"
+                    onclick="unblockUser('${id}')">
+                    Unblock
+                    </button>
+                    `;
+
+                } else {
+
+                    rows += `
+                    <button class="block"
+                    onclick="blockUser('${id}')">
+                    Block
+                    </button>
+                    `;
+                }
+
             }
 
-            if (u.role === "admin") {
-                rows += `<button class="demote" onclick="demoteUser('${id}')">Demote</button>`;
-            }
         }
 
         rows += `</td></tr>`;
+
     });
 
     document.getElementById("userTable").innerHTML = rows;
