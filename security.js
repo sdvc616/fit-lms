@@ -1,4 +1,4 @@
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
 getFirestore,
@@ -8,9 +8,10 @@ getDoc
 
 import { auth } from "./firebase.js";
 
-
 const db = getFirestore();
 
+/* ================= HIDE PAGE UNTIL CHECK ================= */
+document.body.style.display = "none";
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -28,11 +29,20 @@ onAuthStateChanged(auth, async (user) => {
 
         /* ================= USER NOT FOUND ================= */
         if (!snap.exists()) {
+            await signOut(auth);
             window.location.replace("index.html");
             return;
         }
 
         const data = snap.data();
+
+        /* ================= BLOCKED USER CHECK ================= */
+        if (data.status === "blocked") {
+            await signOut(auth);
+            alert("Your account has been blocked by admin.");
+            window.location.replace("index.html");
+            return;
+        }
 
         /* ================= POLICY CHECK ================= */
         if (!data.policyAccepted) {
@@ -40,19 +50,15 @@ onAuthStateChanged(auth, async (user) => {
             return;
         }
 
-        /* ================= ROLE SYSTEM (FIXED) ================= */
+        /* ================= ROLE SYSTEM ================= */
         const role = data.role || "user";
-
-        /* ================= ROLE-BASED CONTROL ================= */
 
         if (role === "super_admin") {
             console.log("Super Admin detected");
         }
-
         else if (role === "admin") {
             console.log("Admin detected");
         }
-
         else {
             console.log("Normal user detected");
         }
@@ -60,12 +66,15 @@ onAuthStateChanged(auth, async (user) => {
         /* ================= ACCESS GRANTED ================= */
         console.log("Access granted:", user.uid);
 
+        /* ================= SHOW PAGE AFTER SUCCESS ================= */
+        document.body.style.display = "block";
+
     } catch (error) {
 
         console.log("Security error:", error);
 
+        await signOut(auth);
         window.location.replace("index.html");
-
     }
 
 });
