@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ET Dashboard</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* ===== SAME CSS (UNCHANGED) ===== */
+body{
+margin:0;
+font-family:Arial;
+background:#f4f6fb;
+display:flex;
+}
+
+.overlay{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.4);
+z-index:900;
+}
+
+.sidebar{
+width:240px;
+background:#0a2a66;
+color:white;
+height:100vh;
+position:fixed;
+padding-top:30px;
+transition:0.3s;
+z-index:1000;
+}
+
+.sidebar a{
+display:block;
+color:white;
+text-decoration:none;
+padding:12px 20px;
+margin:6px 15px;
+border-radius:8px;
+background:rgba(255,255,255,0.05);
+}
+
+.sidebar a:hover{
+background:white;
+color:#0a2a66;
+}
+
+.main{
+margin-left:240px;
+width:100%;
+}
+
+.header{
+background:white;
+padding:15px 20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+box-shadow:0 3px 10px rgba(0,0,0,0.1);
+}
+
+.header-left{
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.menu-toggle{
+display:none;
+font-size:24px;
+cursor:pointer;
+color:#0a2a66;
+}
+
+.logout-btn{
+background:#ff4d4d;
+color:white;
+padding:8px 14px;
+border-radius:6px;
+text-decoration:none;
+font-weight:bold;
+}
+
+.content{padding:20px;}
+
+.main-card{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+text-align:center;
+margin-bottom:18px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 5px 12px rgba(0,0,0,0.08);
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
+
+.num{
+font-size:26px;
+font-weight:bold;
+color:#0a2a66;
+}
+
+.icon{font-size:30px;}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:15px;
+}
+
+.class-card{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 5px 12px rgba(0,0,0,0.08);
+cursor:pointer;
+text-align:center;
+transition:0.3s;
+}
+
+.class-card:hover{
+transform:translateY(-5px);
+border:1px solid #0a2a66;
+}
+
+.popup{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+justify-content:center;
+align-items:center;
+z-index:1100;
+}
+
+.popup-box{
+background:white;
+padding:20px;
+border-radius:12px;
+width:90%;
+max-width:420px;
+position:relative;
+}
+
+.close{
+position:absolute;
+right:10px;
+top:5px;
+font-size:22px;
+cursor:pointer;
+}
+
+@media(max-width:768px){
+.sidebar{left:-240px;position:fixed;}
+.sidebar.active{left:0;}
+.main{margin-left:0;width:100%;}
+.menu-toggle{display:block;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+<h3 style="text-align:center;">ET MENU</h3>
+
+<a href="index.html">Home</a>
+<a href="cit_dashboard.html">CIT Department</a>
+<a href="et_dashboard.html">ET Department</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="header">
+
+<div class="header-left">
+<span class="menu-toggle" onclick="toggleMenu()">☰</span>
+<h2>ET Department</h2>
+</div>
+
+<a href="#" onclick="logout()" class="logout-btn">Logout</a>
+
+</div>
+
+<div class="content">
+
+<div class="main-card">
+<h2>Welcome to ET Department 👋</h2>
+<p>Department overview and student information system.</p>
+</div>
+
+<!-- TOTAL CARD (FIXED) -->
+<div class="card">
+
+<div>
+<h3>Total Students</h3>
+<p>ET Department Students</p>
+</div>
+
+<div class="num">36</div>
+
+<div class="icon">🎓</div>
+
+</div>
+
+<!-- GRID -->
+<div class="grid">
+
+<div class="class-card" onclick="openPopup('1st Year',14,0,'')">
+<div class="icon">1️⃣</div>
+<h3>1st Year</h3>
+<p>Total Students: 14</p>
+</div>
+
+<div class="class-card" onclick="openPopup('2nd Year',12,0,'')">
+<div class="icon">2️⃣</div>
+<h3>2nd Year</h3>
+<p>Total Students: 12</p>
+</div>
+
+<div class="class-card" onclick="openPopup('3rd Year',10,0,'')">
+<div class="icon">3️⃣</div>
+<h3>3rd Year</h3>
+<p>Total Students: 10</p>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<!-- POPUP -->
+<div class="popup" id="popup">
+<div class="popup-box">
+
+<span class="close" onclick="closePopup()">×</span>
+
+<h3 id="className"></h3>
+
+<p><b>Total Students:</b> <span id="classCount"></span></p>
+<p><b>Total Subjects:</b> <span id="subjectCount"></span></p>
+
+<p><b>Subjects:</b></p>
+<div id="classSubjects">No subjects added yet</div>
+
+</div>
+</div>
+
+<script>
+
+function toggleMenu(){
+document.getElementById("sidebar").classList.toggle("active");
+}
+
+function openPopup(name,students,subjectCount,subjects){
+document.getElementById("className").innerText = name;
+document.getElementById("classCount").innerText = students;
+document.getElementById("subjectCount").innerText = subjectCount;
+document.getElementById("popup").style.display = "flex";
+}
+
+function closePopup(){
+document.getElementById("popup").style.display = "none";
+}
+
+function logout(){
+window.location.href = "index.html";
+}
+
+</script>
+
+</body>
+</html>
