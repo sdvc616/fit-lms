@@ -228,10 +228,6 @@ Logout
 <!-- FIREBASE -->
 <script type="module">
 
-import { sendEmail } from "./email.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { db } from "./firebase.js";
-   
 import { auth, db } from "./firebase.js";
 
 import {
@@ -242,6 +238,8 @@ import {
 collection,
 getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import { sendEmail } from "./email.js";
 
 
 /* =============================
