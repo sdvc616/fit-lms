@@ -215,14 +215,14 @@ window.registerUser = async function () {
             username: username,
             email: email,
 
-            // 🔐 LMS ROLE SYSTEM
-            role: "student",
+            // 🔐 LMS ROLE SYSTEM (FIXED)
+            role: "user",
 
             // 📜 POLICY SYSTEM
             policyAccepted: false,
             policyVersion: "1.0",
 
-            // 📊 TIMESTAMPS (FIXED)
+            // 📊 TIMESTAMPS
             createdAt: serverTimestamp(),
 
             // 🟢 STATUS
