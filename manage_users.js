@@ -1,7 +1,5 @@
 import { auth, db } from "./firebase.js";
 
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
 import {
 collection,
 getDocs,
@@ -12,179 +10,236 @@ getDoc
 
 
 /* ==============================
-   AUTH CHECK (ADMIN ONLY)
+   LOAD USERS
 ============================== */
-onAuthStateChanged(auth, async (user) => {
-
-    if (!user) {
-        window.location.href = "index.html";
-        return;
-    }
-
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-        window.location.href = "index.html";
-        return;
-    }
-
-    const me = snap.data();
-
-    if (me.role !== "admin" && me.role !== "super_admin") {
-        alert("Access Denied");
-        window.location.href = "index.html";
-        return;
-    }
-
-    loadUsers(me);
-});
+loadUsers();
 
 
 /* ==============================
    LOAD USERS TABLE
 ============================== */
-async function loadUsers(me) {
+async function loadUsers() {
 
-    const snap = await getDocs(collection(db, "users"));
+    try {
 
-    let rows = "";
+        /* ================= CURRENT USER ================= */
+        const myRef = doc(db, "users", auth.currentUser.uid);
+        const mySnap = await getDoc(myRef);
 
-    snap.forEach((docSnap) => {
+        if (!mySnap.exists()) {
+            return;
+        }
 
-        const u = docSnap.data();
-        const id = docSnap.id;
+        const me = mySnap.data();
 
-        const isSelf = id === auth.currentUser.uid;
+        /* ================= GET ALL USERS ================= */
+        const snap = await getDocs(collection(db, "users"));
 
-        rows += `
-        <tr>
-            <td>${id}</td>
-            <td>${u.username || ""}</td>
-            <td>${u.email || ""}</td>
-            <td>${u.role || "user"}</td>
-            <td>${u.status || "active"}</td>
-            <td>
-        `;
+        let rows = "";
 
-        /* ================= SUPER ADMIN RULES ================= */
-        if (me.role === "super_admin") {
+        snap.forEach((docSnap) => {
 
-            /* CANNOT TOUCH SELF */
+            const u = docSnap.data();
+            const id = docSnap.id;
+
+            const isSelf = id === auth.currentUser.uid;
+
+            rows += `
+            <tr>
+                <td>${id}</td>
+                <td>${u.username || ""}</td>
+                <td>${u.email || ""}</td>
+                <td>${u.role || "user"}</td>
+                <td>${u.status || "active"}</td>
+                <td>
+            `;
+
+            /* ================= BLOCK / UNBLOCK ================= */
+
             if (!isSelf) {
 
-                /* CANNOT TOUCH OTHER SUPER ADMINS */
-                if (u.role !== "super_admin") {
+                /* SUPER ADMIN RULES */
+                if (me.role === "super_admin") {
 
-                    /* BLOCK / UNBLOCK */
-                    if (u.status === "blocked") {
+                    if (u.role !== "super_admin") {
 
-                        rows += `
-                        <button class="unblock"
-                        onclick="unblockUser('${id}')">
-                        Unblock
-                        </button>
-                        `;
+                        if (u.status === "blocked") {
+                            rows += `
+                            <button class="unblock"
+                            onclick="unblockUser('${id}')">
+                            Unblock
+                            </button>
+                            `;
+                        } else {
+                            rows += `
+                            <button class="block"
+                            onclick="blockUser('${id}')">
+                            Block
+                            </button>
+                            `;
+                        }
 
-                    } else {
-
-                        rows += `
-                        <button class="block"
-                        onclick="blockUser('${id}')">
-                        Block
-                        </button>
-                        `;
                     }
 
                 }
 
-                /* PROMOTE USER */
-                if (u.role === "user") {
+                /* ADMIN RULES */
+                else if (me.role === "admin") {
 
-                    rows += `
-                    <button class="promote"
-                    onclick="promoteUser('${id}')">
-                    Promote
-                    </button>
-                    `;
-                }
+                    if (u.role === "user") {
 
-                /* DEMOTE ADMIN */
-                if (u.role === "admin") {
+                        if (u.status === "blocked") {
+                            rows += `
+                            <button class="unblock"
+                            onclick="unblockUser('${id}')">
+                            Unblock
+                            </button>
+                            `;
+                        } else {
+                            rows += `
+                            <button class="block"
+                            onclick="blockUser('${id}')">
+                            Block
+                            </button>
+                            `;
+                        }
 
-                    rows += `
-                    <button class="demote"
-                    onclick="demoteUser('${id}')">
-                    Demote
-                    </button>
-                    `;
-                }
+                    }
 
-            }
-
-        }
-
-        /* ================= ADMIN RULES ================= */
-        else if (me.role === "admin") {
-
-            /* ADMIN CAN ONLY HANDLE USERS */
-            if (u.role === "user") {
-
-                if (u.status === "blocked") {
-
-                    rows += `
-                    <button class="unblock"
-                    onclick="unblockUser('${id}')">
-                    Unblock
-                    </button>
-                    `;
-
-                } else {
-
-                    rows += `
-                    <button class="block"
-                    onclick="blockUser('${id}')">
-                    Block
-                    </button>
-                    `;
                 }
 
             }
 
-        }
+            /* ================= PROMOTE ================= */
 
-        rows += `</td></tr>`;
+            if (
+                me.role === "super_admin" &&
+                u.role === "user" &&
+                !isSelf
+            ) {
 
-    });
+                rows += `
+                <button class="promote"
+                onclick="promoteUser('${id}')">
+                Promote
+                </button>
+                `;
+            }
 
-    document.getElementById("userTable").innerHTML = rows;
+            /* ================= DEMOTE ================= */
+
+            if (
+                me.role === "super_admin" &&
+                u.role === "admin" &&
+                !isSelf
+            ) {
+
+                rows += `
+                <button class="demote"
+                onclick="demoteUser('${id}')">
+                Demote
+                </button>
+                `;
+            }
+
+            rows += `</td></tr>`;
+
+        });
+
+        document.getElementById("userTable").innerHTML = rows;
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
 }
 
 
 /* ==============================
-   ACTIONS
+   BLOCK USER
 ============================== */
-
 window.blockUser = async (id) => {
-    await updateDoc(doc(db, "users", id), {
-        status: "blocked"
-    });
+
+    try {
+
+        await updateDoc(doc(db, "users", id), {
+            status: "blocked"
+        });
+
+        loadUsers();
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
 };
 
+
+/* ==============================
+   UNBLOCK USER
+============================== */
 window.unblockUser = async (id) => {
-    await updateDoc(doc(db, "users", id), {
-        status: "active"
-    });
+
+    try {
+
+        await updateDoc(doc(db, "users", id), {
+            status: "active"
+        });
+
+        loadUsers();
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
 };
 
+
+/* ==============================
+   PROMOTE USER
+============================== */
 window.promoteUser = async (id) => {
-    await updateDoc(doc(db, "users", id), {
-        role: "admin"
-    });
+
+    try {
+
+        await updateDoc(doc(db, "users", id), {
+            role: "admin"
+        });
+
+        loadUsers();
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
 };
 
+
+/* ==============================
+   DEMOTE USER
+============================== */
 window.demoteUser = async (id) => {
-    await updateDoc(doc(db, "users", id), {
-        role: "user"
-    });
+
+    try {
+
+        await updateDoc(doc(db, "users", id), {
+            role: "user"
+        });
+
+        loadUsers();
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
 };
