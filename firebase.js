@@ -2,8 +2,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* ================= FIREBASE CONFIG ================= */
-
 const firebaseConfig = {
   apiKey: "AIzaSyCDt5kcl-Ib-MCskjiQMiD_yShIhsLgGd0",
   authDomain: "fit-lms.firebaseapp.com",
@@ -13,11 +11,7 @@ const firebaseConfig = {
   appId: "1:523650703056:web:72845c5a1e2d51e95ec8d5"
 };
 
-/* ================= INITIALIZE APP ================= */
-
 const app = initializeApp(firebaseConfig);
-
-/* ================= SERVICES ================= */
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
