@@ -143,10 +143,10 @@ Login requires email verification (OTP).
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
 import {
 getAuth,
-signInWithEmailAndPassword,
-signOut
+signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
@@ -166,67 +166,83 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
 const auth = getAuth(app);
+
 const db = getFirestore(app);
 
 /* LOGIN USER */
 window.loginUser = async function () {
 
     let email = document.getElementById("email").value;
+
     let password = document.getElementById("password").value;
 
     let msg = document.getElementById("msg");
+
     msg.style.display = "none";
 
+    /* EMPTY CHECK */
     if (!email || !password) {
+
         msg.style.display = "block";
+
         msg.innerText = "Please fill all fields!";
+
         return;
     }
 
     try {
 
-        // LOGIN
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        /* LOGIN USER */
+        const userCredential =
+        await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
 
-        // FORCE REFRESH EMAIL STATUS (VERY IMPORTANT)
-        await userCredential.user.reload();
+        const user = userCredential.user;
 
-        const user = auth.currentUser;
-
-        console.log("EMAIL VERIFIED STATUS:", user.emailVerified);
-
-        // BLOCK IF NOT VERIFIED
-        if (user.emailVerified !== true) {
-
-            msg.style.display = "block";
-            msg.innerText = "Email not verified. Please check your Gmail and verify first.";
-
-            await signOut(auth);
-            return;
-        }
-
-        // GET ROLE FROM FIRESTORE
+        /* GET USER ROLE */
         const ref = doc(db, "users", user.uid);
+
         const snap = await getDoc(ref);
 
         let role = "user";
 
         if (snap.exists()) {
+
             role = snap.data().role;
+
         }
 
-        // REDIRECT
-        if (role === "admin" || role === "super_admin") {
-            window.location.replace("admin_dashboard.html");
+        /* REDIRECT USER */
+        if (
+            role === "admin" ||
+            role === "super_admin"
+        ) {
+
+            window.location.replace(
+                "admin_dashboard.html"
+            );
+
         } else {
-            window.location.replace("dashboard.html");
+
+            window.location.replace(
+                "dashboard.html"
+            );
+
         }
 
     } catch (error) {
 
         msg.style.display = "block";
-        msg.innerText = error.message;
+
+        msg.innerText =
+        "Invalid email or password.";
+
+        console.log(error);
 
     }
 };
