@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Privacy & Policy - FIT LMS</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+/* ================= BASE ================= */
+
+body{
+margin:0;
+font-family:Arial;
+background:#f4f6fb;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+padding:15px;
+box-sizing:border-box;
+}
+
+/* ================= CARD ================= */
+
+.card{
+background:white;
+width:100%;
+max-width:500px;
+border-radius:14px;
+box-shadow:0 5px 20px rgba(0,0,0,0.1);
+padding:25px;
+animation:fadeIn 0.4s ease-in-out;
+}
+
+/* ================= HEADER ================= */
+
+.card h2{
+margin:0;
+color:#0a2a66;
+text-align:center;
+font-size:22px;
+}
+
+.card p{
+color:#555;
+line-height:1.6;
+font-size:14px;
+margin-top:10px;
+}
+
+/* ================= BOX ================= */
+
+.box{
+background:#f4f6fb;
+padding:15px;
+border-radius:10px;
+margin-top:15px;
+font-size:13px;
+color:#333;
+line-height:1.6;
+max-height:250px;
+overflow:auto;
+border:1px solid #ddd;
+}
+
+/* ================= BUTTON ================= */
+
+button{
+width:100%;
+margin-top:18px;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#0a2a66;
+color:white;
+font-size:15px;
+cursor:pointer;
+transition:0.2s;
+}
+
+button:hover{
+background:#061a40;
+}
+
+/* ================= SMALL TEXT ================= */
+
+.small{
+font-size:12px;
+color:#777;
+margin-top:10px;
+text-align:center;
+}
+
+/* ================= ANIMATION ================= */
+
+@keyframes fadeIn{
+from{opacity:0; transform:translateY(10px);}
+to{opacity:1; transform:translateY(0);}
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:600px){
+.card{
+padding:18px;
+}
+.card h2{
+font-size:20px;
+}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>Privacy Policy & Terms</h2>
+
+<p>
+Before using FIT LMS, you must accept our privacy policy and terms of use.
+</p>
+
+<div class="box">
+
+<strong>1. Data Collection</strong><br>
+We collect your email, username, and login activity for LMS functionality.
+
+<br><br>
+
+<strong>2. Usage</strong><br>
+Your data is used only for educational and system access purposes.
+
+<br><br>
+
+<strong>3. Security</strong><br>
+We use Firebase Authentication and Firestore to secure your data.
+
+<br><br>
+
+<strong>4. Account Rules</strong><br>
+Users must not share accounts or misuse system access.
+
+<br><br>
+
+<strong>5. Acceptance</strong><br>
+By clicking accept, you agree to all terms above.
+
+</div>
+
+<button onclick="acceptPolicy()">Accept & Continue</button>
+
+<div class="small">
+You must accept to continue using the system
+</div>
+
+</div>
+
+<!-- ================= FIREBASE ================= -->
+
+<script type="module">
+
+import { auth, db } from "./firebase.js";
+
+import {
+doc,
+updateDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+
+/* ================= ACCEPT POLICY ================= */
+
+window.acceptPolicy = async function () {
+
+    try {
+
+        const user = auth.currentUser;
+
+        if (!user) {
+            window.location.replace("index.html");
+            return;
+        }
+
+        await updateDoc(doc(db, "users", user.uid), {
+            policyAccepted: true
+        });
+
+        window.location.replace("dashboard.html");
+
+    } catch (error) {
+        console.log(error);
+        alert("Something went wrong. Try again.");
+    }
+
+};
+
+</script>
+
+</body>
+</html>
