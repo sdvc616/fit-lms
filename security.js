@@ -1,9 +1,7 @@
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
 import {
 getFirestore,
 doc,
-getDoc,
 onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -11,108 +9,99 @@ import { auth } from "./firebase.js";
 
 const db = getFirestore();
 
-/* ================= SAFE PAGE HIDE ================= */
+/* ================= PREVENT FLICKER ================= */
 document.documentElement.style.visibility = "hidden";
 
-/* ================= INACTIVITY TIMER ================= */
-let inactivityTimer;
+/* ================= GLOBAL STATE ================= */
+let unsubscribeUser = null;
+let inactivityTimer = null;
 
+/* ================= INACTIVITY SYSTEM ================= */
 function startInactivityTimer() {
 
-    const resetTimer = () => {
+    const reset = () => {
 
         clearTimeout(inactivityTimer);
 
         inactivityTimer = setTimeout(async () => {
 
             try {
-                await signOut(auth);
+                if (auth.currentUser) {
+                    await signOut(auth);
+                }
                 alert("Session expired due to inactivity.");
-                window.location.replace("index.html");
+                window.location.href = "index.html";
             } catch (e) {
                 console.log(e);
             }
 
-        }, 10 * 60 * 1000); // 10 minutes
+        }, 10 * 60 * 1000); // 10 min
     };
 
-    ["click", "mousemove", "keydown", "scroll", "touchstart"].forEach((event) => {
-        window.addEventListener(event, resetTimer);
+    ["click", "mousemove", "keydown", "scroll", "touchstart"].forEach(evt => {
+        window.addEventListener(evt, reset);
     });
 
-    resetTimer();
+    reset();
 }
 
+/* ================= AUTH LISTENER ================= */
+onAuthStateChanged(auth, (user) => {
 
-/* ================= AUTH CHECK ================= */
-onAuthStateChanged(auth, async (user) => {
+    /* CLEAN OLD LISTENER */
+    if (unsubscribeUser) {
+        unsubscribeUser();
+        unsubscribeUser = null;
+    }
 
     if (!user) {
-        window.location.replace("index.html");
+        document.documentElement.style.visibility = "visible";
+        window.location.href = "index.html";
         return;
     }
 
-    try {
+    const ref = doc(db, "users", user.uid);
 
-        const ref = doc(db, "users", user.uid);
+    /* ================= REALTIME USER LISTENER ================= */
+    unsubscribeUser = onSnapshot(ref, async (snap) => {
 
-        /* ================= REAL-TIME LISTENER ================= */
-        const unsubscribe = onSnapshot(ref, async (snap) => {
+        if (!snap.exists()) {
+            await signOut(auth);
+            window.location.href = "index.html";
+            return;
+        }
 
-            if (!snap.exists()) {
-                await signOut(auth);
-                window.location.replace("index.html");
-                return;
-            }
+        const data = snap.data();
 
-            const data = snap.data();
+        /* ================= BLOCK CHECK (REALTIME) ================= */
+        if (data.status === "blocked") {
 
-            /* ================= BLOCKED USER (INSTANT LOGOUT) ================= */
-            if (data.status === "blocked") {
+            await signOut(auth);
+            alert("Your account has been blocked by admin.");
+            window.location.href = "index.html";
+            return;
+        }
 
-                await signOut(auth);
-                alert("Your account has been blocked by admin.");
-                window.location.replace("index.html");
+        /* ================= POLICY ================= */
+        if (!data.policyAccepted) {
+            window.location.href = "policy.html";
+            return;
+        }
 
-                return;
-            }
+        /* ================= ROLE ================= */
+        const role = data.role || "user";
 
-            /* ================= POLICY CHECK ================= */
-            if (!data.policyAccepted) {
-                window.location.replace("policy.html");
-                return;
-            }
+        console.log("Role:", role);
 
-            /* ================= ROLE SYSTEM ================= */
-            const role = data.role || "user";
+        /* ================= SHOW PAGE ONCE ================= */
+        document.documentElement.style.visibility = "visible";
 
-            if (role === "super_admin") {
-                console.log("Super Admin detected");
-            }
-            else if (role === "admin") {
-                console.log("Admin detected");
-            }
-            else {
-                console.log("Normal user detected");
-            }
-
-            /* ================= ACCESS GRANTED ================= */
-            console.log("Access granted:", user.uid);
-
-            /* ================= SHOW PAGE ================= */
-            document.documentElement.style.visibility = "visible";
-
-            /* ================= START INACTIVITY TIMER ================= */
+        /* ================= START TIMER ONLY ONCE ================= */
+        if (!window.__inactivityStarted) {
+            window.__inactivityStarted = true;
             startInactivityTimer();
+        }
 
-        });
-
-    } catch (error) {
-
-        console.log("Security error:", error);
-
-        await signOut(auth);
-        window.location.replace("index.html");
-    }
+    });
 
 });
