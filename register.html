@@ -138,10 +138,10 @@ Already have account? Login
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
 import {
 getAuth,
-createUserWithEmailAndPassword,
-sendEmailVerification
+createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
@@ -161,7 +161,9 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
 const auth = getAuth(app);
+
 const db = getFirestore(app);
 
 /* REGISTER USER */
@@ -172,62 +174,97 @@ window.registerUser = async function () {
     let password = document.getElementById("password").value;
 
     let msg = document.getElementById("msg");
+
     msg.style.display = "none";
 
+    /* EMPTY CHECK */
     if (!username || !email || !password) {
+
         msg.style.display = "block";
         msg.className = "msg error";
         msg.innerText = "Please fill all fields!";
+
         return;
     }
 
+    /* PASSWORD CHECK */
     if (password.length < 8) {
+
         msg.style.display = "block";
         msg.className = "msg error";
         msg.innerText = "Password must be at least 8 characters!";
+
         return;
     }
 
     try {
 
-        // 1. CREATE USER
+        /* CREATE USER */
         const userCredential =
-            await createUserWithEmailAndPassword(auth, email, password);
+        await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
 
         const user = userCredential.user;
 
-        // 2. SEND VERIFICATION EMAIL
-        await sendEmailVerification(user);
-
-        // 3. SAVE USER IN FIRESTORE
+        /* SAVE USER DATA */
         await setDoc(doc(db, "users", user.uid), {
+
             username: username,
             email: email,
-            role: "user",
-            verified: false
+            role: "user"
+
         });
 
-        // 4. MESSAGE ONLY (NO LOGIN / NO DASHBOARD REDIRECT)
+        /* SUCCESS MESSAGE */
         msg.style.display = "block";
+
         msg.className = "msg success";
-        msg.innerText = "Verification email sent. Please check Gmail and verify before login.";
+
+        msg.innerText =
+        "Account created successfully! Redirecting to login...";
+
+        /* REDIRECT */
+        setTimeout(() => {
+
+            window.location.replace("index.html");
+
+        }, 2000);
 
     } catch (error) {
 
         msg.style.display = "block";
+
         msg.className = "msg error";
 
         if (error.code === "auth/email-already-in-use") {
-            msg.innerText = "Email already registered.";
+
+            msg.innerText =
+            "Email already registered.";
+
         }
+
         else if (error.code === "auth/invalid-email") {
-            msg.innerText = "Invalid email format.";
+
+            msg.innerText =
+            "Invalid email format.";
+
         }
+
         else if (error.code === "auth/weak-password") {
-            msg.innerText = "Password must be at least 8 characters.";
+
+            msg.innerText =
+            "Password must be at least 8 characters.";
+
         }
+
         else {
-            msg.innerText = error.message;
+
+            msg.innerText =
+            "Something went wrong. Try again.";
+
         }
 
         console.log(error);
