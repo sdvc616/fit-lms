@@ -491,25 +491,13 @@ async function loadCounts(){
 
     try {
 
-        const snap = await getDocs(collection(db, "users"));
-
-        let users = 0;
-        let admins = 0;
-
-        snap.forEach(doc => {
-
-            const data = doc.data();
-
-            if(data.role === "user") users++;
-            else if(data.role === "admin") admins++;
-
-        });
-
+        // 👨‍🎓 FIXED STUDENT COUNT (advertising value)
         const studentEl = document.getElementById("studentCount");
-        const staffEl = document.getElementById("staffCount");
+        if (studentEl) studentEl.innerText = "1200";
 
-        if(studentEl) studentEl.innerText = users;
-        if(staffEl) staffEl.innerText = admins;
+        // 👨‍🏫 STAFF (temporary placeholder until staff system)
+        const staffEl = document.getElementById("staffCount");
+        if (staffEl) staffEl.innerText = "0";
 
     } catch (error) {
         console.log("Count error:", error);
