@@ -174,15 +174,16 @@ const db = getFirestore(app);
 
 window.registerUser = async function () {
 
-    let username = document.getElementById("username").value;
-    let email = document.getElementById("email").value;
+    let username = document.getElementById("username").value.trim();
+    let email = document.getElementById("email").value.trim();
     let password = document.getElementById("password").value;
 
     let msg = document.getElementById("msg");
 
     msg.style.display = "none";
 
-    /* EMPTY CHECK */
+    /* ================= VALIDATION ================= */
+
     if (!username || !email || !password) {
         msg.style.display = "block";
         msg.className = "msg error";
@@ -190,7 +191,6 @@ window.registerUser = async function () {
         return;
     }
 
-    /* PASSWORD CHECK */
     if (password.length < 8) {
         msg.style.display = "block";
         msg.className = "msg error";
@@ -198,9 +198,14 @@ window.registerUser = async function () {
         return;
     }
 
+    /* ================= UI LOADING STATE ================= */
+    msg.style.display = "block";
+    msg.className = "msg info";
+    msg.innerText = "Creating account...";
+
     try {
 
-        /* CREATE USER */
+        /* ================= CREATE AUTH USER ================= */
         const userCredential = await createUserWithEmailAndPassword(
             auth,
             email,
@@ -209,36 +214,35 @@ window.registerUser = async function () {
 
         const user = userCredential.user;
 
-        /* SAVE USER DATA IN FIRESTORE */
+        /* ================= SAVE USER IN FIRESTORE ================= */
         await setDoc(doc(db, "users", user.uid), {
 
             username: username,
             email: email,
 
-            // 🔐 LMS ROLE SYSTEM (FIXED)
+            // 🔐 ROLE SYSTEM
             role: "user",
 
             // 📜 POLICY SYSTEM
             policyAccepted: false,
             policyVersion: "1.0",
 
-            // 📊 TIMESTAMPS
+            // 📊 TIMESTAMP
             createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp(),
 
             // 🟢 STATUS
             status: "active"
 
         });
 
-        /* SUCCESS MESSAGE */
-        msg.style.display = "block";
+        /* ================= SUCCESS ================= */
         msg.className = "msg success";
-        msg.innerText = "Account created successfully! Redirecting to login...";
+        msg.innerText = "Account created successfully! Redirecting...";
 
-        /* REDIRECT */
         setTimeout(() => {
             window.location.replace("index.html");
-        }, 2000);
+        }, 1500);
 
     } catch (error) {
 
@@ -247,17 +251,22 @@ window.registerUser = async function () {
         msg.style.display = "block";
         msg.className = "msg error";
 
-        if (error.code === "auth/email-already-in-use") {
-            msg.innerText = "Email already registered.";
-        }
-        else if (error.code === "auth/invalid-email") {
-            msg.innerText = "Invalid email format.";
-        }
-        else if (error.code === "auth/weak-password") {
-            msg.innerText = "Password must be at least 8 characters.";
-        }
-        else {
-            msg.innerText = "Something went wrong. Try again.";
+        switch (error.code) {
+
+            case "auth/email-already-in-use":
+                msg.innerText = "Email already registered.";
+                break;
+
+            case "auth/invalid-email":
+                msg.innerText = "Invalid email format.";
+                break;
+
+            case "auth/weak-password":
+                msg.innerText = "Password must be at least 8 characters.";
+                break;
+
+            default:
+                msg.innerText = "Something went wrong. Try again.";
         }
     }
 };
