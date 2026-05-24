@@ -152,10 +152,14 @@ signInWithEmailAndPassword
 import {
 getFirestore,
 doc,
-getDoc
+getDoc,
+updateDoc,
+serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* FIREBASE CONFIG */
+
+/* ================= FIREBASE CONFIG ================= */
+
 const firebaseConfig = {
   apiKey: "AIzaSyCDt5kcl-Ib-MCskjiQMiD_yShIhsLgGd0",
   authDomain: "fit-lms.firebaseapp.com",
@@ -168,35 +172,30 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
-
 const db = getFirestore(app);
 
-/* LOGIN USER */
+
+/* ================= LOGIN USER ================= */
+
 window.loginUser = async function () {
 
     let email = document.getElementById("email").value;
-
     let password = document.getElementById("password").value;
-
     let msg = document.getElementById("msg");
 
     msg.style.display = "none";
 
     /* EMPTY CHECK */
     if (!email || !password) {
-
         msg.style.display = "block";
-
         msg.innerText = "Please fill all fields!";
-
         return;
     }
 
     try {
 
-        /* LOGIN USER */
-        const userCredential =
-        await signInWithEmailAndPassword(
+        /* LOGIN */
+        const userCredential = await signInWithEmailAndPassword(
             auth,
             email,
             password
@@ -204,46 +203,48 @@ window.loginUser = async function () {
 
         const user = userCredential.user;
 
-        /* GET USER ROLE */
+        /* GET USER DATA */
         const ref = doc(db, "users", user.uid);
-
         const snap = await getDoc(ref);
 
-        let role = "user";
-
-        if (snap.exists()) {
-
-            role = snap.data().role;
-
+        /* IF USER NOT FOUND IN FIRESTORE */
+        if (!snap.exists()) {
+            msg.style.display = "block";
+            msg.innerText = "User data not found!";
+            return;
         }
 
-        /* REDIRECT USER */
-        if (
-            role === "admin" ||
-            role === "super_admin"
-        ) {
+        const data = snap.data();
 
-            window.location.replace(
-                "admin_dashboard.html"
-            );
+        /* ================= UPDATE LAST LOGIN ================= */
+        await updateDoc(ref, {
+            lastLogin: serverTimestamp()
+        });
 
-        } else {
+        /* ================= POLICY CHECK ================= */
 
-            window.location.replace(
-                "dashboard.html"
-            );
+        if (!data.policyAccepted) {
+            window.location.replace("policy.html");
+            return;
+        }
 
+        /* ================= ROLE CHECK ================= */
+
+        let role = data.role || "student";
+
+        if (role === "admin" || role === "super_admin") {
+            window.location.replace("admin_dashboard.html");
+        } 
+        else {
+            window.location.replace("dashboard.html");
         }
 
     } catch (error) {
 
-        msg.style.display = "block";
-
-        msg.innerText =
-        "Invalid email or password.";
-
         console.log(error);
 
+        msg.style.display = "block";
+        msg.innerText = "Invalid email or password.";
     }
 };
 
