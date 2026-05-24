@@ -12,14 +12,13 @@ getDoc
 /* ==============================
    LOAD USERS
 ============================== */
-loadUsers();
+loadUsers(me, user.uid);
 
 
 /* ==============================
    LOAD USERS TABLE
 ============================== */
-async function loadUsers() {
-
+async function loadUsers(me, currentUid) {
     try {
 
         /* ================= CURRENT USER ================= */
@@ -42,7 +41,7 @@ async function loadUsers() {
             const u = docSnap.data();
             const id = docSnap.id;
 
-            const isSelf = id === auth.currentUser.uid;
+           const isSelf = id === currentUid;
 
             rows += `
             <tr>
